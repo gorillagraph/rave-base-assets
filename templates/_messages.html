@@ -1,4 +1,4 @@
-<!--
+{#
 Template: Flash Messages
 
 Description: Retrieves flashed messages from the session and displays them as alert messages. It's generally used to
@@ -15,13 +15,15 @@ different types of messages (e.g., success, error, warning).
 
 Note: For customization or adjustment of the alert styling, please refer to the CSS stylesheets and classes used in the
 'page_util_layout.html' template.
--->
+#}
 {%- with messages = get_flashed_messages(with_categories=true) -%}
   {% if messages %}
-    {% for category, message in messages %}
-    <div class="alert alert-{{ category }}">
-      {{ message }}
+    <div class="space-y-2">
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }}" role="alert" aria-live="polite">
+          {{ message|safe }}
+        </div>
+      {% endfor %}
     </div>
-    {% endfor %}
   {% endif %}
 {%- endwith %}

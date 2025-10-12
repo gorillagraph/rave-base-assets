@@ -1,4 +1,4 @@
-<!--
+{#
 Template: Email Confirmation Instructions with HOTP Code
 
 Description: This template is used to send an email to newly registered users, providing them with a HOTP code to verify
@@ -8,7 +8,7 @@ to 'Email Confirmation Method' in https://dev-docs.ravesocial.co/portal.html#api
 Template Variables:
      - user: An object containing information about the user, such as 'name', 'email', etc.
      - token: A string representing the HOTP code for verifying the email address.
--->
+#}
 {% extends "email/base.html" %}
 {% block content %}
   {% if user.name %}

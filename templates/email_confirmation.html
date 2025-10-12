@@ -1,4 +1,4 @@
-<!--
+{#
 Template: Email Confirmation
 
 Description: This template is used to display the email confirmation form and related error messages.
@@ -9,36 +9,43 @@ Template Variables:
         - 'expired'
         - 'unverified'
     - error_message: A verbose error message string providing more information about the encountered error.
--->
+#}
 {% extends "customer_layout.html" %}
+{% block title %}Email confirmation · Rave Social{% endblock %}
+
 {% block tabcontent %}
-    {% if error == 'expired' or error == 'unverified' %}
-    <div class="form-error container">
-        <p>
-            {{  error_message }}
-        </p>
+  <section class="max-w-md mx-auto">
+    <div class="card p-6">
+      <h1 class="text-xl font-semibold text-gray-900 dark:text-gray-100">Confirm your email</h1>
+
+      {% if error_message %}
+        <div class="mt-3 alert alert-error" role="alert" aria-live="polite">
+          {{ error_message }}
+        </div>
+      {% endif %}
+
+      <form class="mt-3 space-y-4" action="/email/confirm" method="POST" novalidate>
+        <div>
+          <label for="email" class="field-label">Email</label>
+          <input
+              id="email"
+              name="email"
+              type="email"
+              inputmode="email"
+              autocomplete="email"
+              placeholder="you@example.com"
+              required
+              class="input input-block-level"
+              pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}"
+              title="Enter a valid email like name@example.com"
+              aria-describedby="email-hint" />
+          <p id="email-hint" class="field-hint">We’ll send a new confirmation link to this address.</p>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block">
+          Resend confirmation
+        </button>
+      </form>
     </div>
-    <div class="form-forgot container">
-    <form class="form-horizontal" action="/email/confirm" method="POST">
-      <legend>Send email confirmation instructions</legend>
-      <div class="control-group">
-        <label class="control-label" for="email">Email</label>
-        <div class="controls">
-          <input type="text" id="email" name="email" placeholder="Enter your email">
-        </div>
-      </div>
-      <div class="control-group">
-        <div class="controls">
-          <button type="submit" class="btn btn-primary ok">Send</button>
-        </div>
-      </div>
-    </form>
-    </div>
-    {%  elif error == 'invalid' %}
-        <div class="form-error container">
-            <p>
-                {{ error_message }}
-            </p>
-        </div>
-    {% endif %}
+  </section>
 {% endblock %}

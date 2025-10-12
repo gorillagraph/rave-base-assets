@@ -1,25 +1,26 @@
-<!--
+{#
 Template: Page Util Layout
 
 Description: This template serves as a utility layout for pages rendered within the browser. It extends the
 'layout.html' template and provides the structure for the content header, like toast messages, and the content block.
 
 Blocks:
-    - tabcontent: This block represents the content area specific to each page. Child templates should override this block
-    to place their own content.
+  - tabcontent: This block represents the content area specific to each page. Child templates should override this block
+  to place their own content.
 
 Note: For customizing the styling or specific content blocks, refer to the 'customer_layout.html' and respective page
 templates that extend from this utility layout.
--->
+#}
 {% extends "layout.html" %}
+
 {% block content %}
-  <div class="header">
-    <div class="container logo"></div>
-    <div class="container">
+  <div class="max-w-6xl mx-auto px-4">
+    {% if show_global_messages|default(true) %}
       {% include "_messages.html" %}
-    </div>
-    <div id="app_content">
-      {% block tabcontent %}{% endblock %}
-    </div>
+    {% endif %}
   </div>
+
+  <main id="app_content" class="container mx-auto px-4 py-4">
+    {% block tabcontent %}{% endblock %}
+  </main>
 {% endblock %}

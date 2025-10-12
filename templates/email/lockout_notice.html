@@ -1,4 +1,4 @@
-<!--
+{#
 Template: Account Lockout Notice
 
 Description: This template is used to send an email notification to users whose accounts have been locked out due to too many failed login attempts.
@@ -7,7 +7,7 @@ Template Variables:
      - user: An object containing information about the user, such as 'name', 'email', etc.
      - unlock_at: A string representing the date and time (UTC) until which the account lockout will remain active. (Optional)
      - reset_link: A string representing the URL for removing the user lock status.
--->
+#}
 {% extends "email/base.html" %}
 {% block content %}
   {% if user.name %}

@@ -1,4 +1,4 @@
-<!--
+{#
 Template: Email Authentication with OTP
 
 Description: This template is dispatched to users who request a One-Time Password (OTP) for secure sign-in or account
@@ -10,7 +10,7 @@ Template Variables:
      - otp: A string representing the OTP code for verifying the user's email or aiding in account recovery.
      - otp_timeout: An integer representing the OTP's validity duration in seconds. This variable is used to inform the
           user of the time limit within which the OTP must be used before it expires.
--->
+#}
 {% extends "email/base.html" %}
 {% block content %}
   {% if user.name %}

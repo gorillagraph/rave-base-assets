@@ -1,4 +1,4 @@
-<!--
+{#
 Template: Password Change Confirmation
 
 Description: This template is used to send an email notification to users confirming the successful change of their account password.
@@ -6,7 +6,7 @@ Description: This template is used to send an email notification to users confir
 Template Variables:
      - user: An object containing information about the user, such as 'name', 'email', etc.
      - user_unlocked: A boolean indicating whether the user's account was previously locked and has been successfully unlocked.
--->
+#}
 {% extends "email/base.html" %}
 {% block content %}
   {% if user.name %}

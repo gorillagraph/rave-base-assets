@@ -1,4 +1,4 @@
-<!--
+{#
 Template: Email Change Requested
 
 Description: This template is used to send an email to users for confirming a change in their account email address.
@@ -7,7 +7,7 @@ Template Variables:
      - user: An object containing information about the user, such as 'name', 'email', etc.
      - change_email: A string representing the new email address that the user wants to change to.
      - change_link: A string representing the URL for confirming the email change.
--->
+#}
 {% extends "email/base.html" %}
 {% block content %}
   {% if user.name %}

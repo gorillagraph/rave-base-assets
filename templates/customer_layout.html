@@ -1,33 +1,39 @@
-<!--
-Template: Customer specific CSS Styling and Footer
+{#
+Template: Customer Layout Overrides
 
-Description: This template extends the 'page_util_layout.html' template and includes custom styling and footer content.
-It allows for customization of the page's background color, logo image, and footer text.
+Description:
+  - Extends `page_util_layout.html`.
+  - Lets customers override lightweight presentation only (top bar color, logo asset, footer text).
+  - Provide your own CSS in the `head` block; keep structural HTML in the base templates.
 
-This template overrides the 'head' and 'footer' blocks defined in the 'page_util_layout.html' template.
+Blocks:
+  - head: inject CSS overrides (e.g., swap the logo, recolor the top bar, tweak spacing).
+  - footer: customize the footer text.
 
-To customize the styling, modify the CSS rules within the 'head' block. To customize the footer content, modify the
-content within the 'footer' block.
-
-Note: Ensure that the paths and URLs provided for the logo image ('/static/images/company-logo.png') are accurate and
-refer to a valid asset within the project structure.
--->
+Notes:
+- Default logo path is `/static/images/company-logo.png`. You can override that path via CSS if desired.
+- Top bar element class: `.rs-brandbar`. The logo `<img>` is inside it; target via `.rs-brandbar img`.
+#}
 {% extends "page_util_layout.html" %}
+
 {% block head %}
-  <style type="text/css" rel="stylesheet" media="all">
-    .wrap {
-      background-color: unset;
-    }
-    .footer {
-      background-color: #f2f4f6;
-    }
-    .container.logo {
-      background: url("/static/images/company-logo.png") no-repeat center;
-      background-size: 80px;
-      top: 18px;
-    }
+  <style>
+      /* --- Example overrides ------------------------------------------------ */
+
+      /* 1) Change the brand bar color (keeps white text) */
+      /* .rs-brandbar { background: #0b1220; } */
+
+      /* 2) Swap the logo image (keep height consistent with base) */
+      .rs-brandbar img { content: url("/static/images/company-logo-small.png"); }
+
+      /* 3) Lighten the page background slightly */
+      /* body { background-color: #f8fafc; } */
+
+      /* 4) Footer background to match Portal’s light surface */
+      /* .footer { background-color: #f2f4f6; } */
   </style>
 {% endblock %}
+
 {% block footer %}
-  <br>&copy; {{ now.year }} RAVE SOCIAL
+  &copy; {{ now.year }} RAVE SOCIAL
 {% endblock %}

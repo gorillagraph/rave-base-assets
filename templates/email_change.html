@@ -1,4 +1,4 @@
-<!--
+{#
 Template: Password Change Error
 
 Description: This template is used to display error messages related to user password change, such as when the email
@@ -10,14 +10,21 @@ Template Variables:
         - 'expired'
         - 'unknown'
     - error_message: A verbose error message string providing more information about the encountered error.
--->
+#}
 {% extends "customer_layout.html" %}
+{% set show_global_messages = false %}
+{% block title %}Email change · Rave Social{% endblock %}
+
 {% block tabcontent %}
-  <div class="form-forgot container">
-    <div class="form-error container">
-        <p>
-            {{  error_message }}
-        </p>
+  <section class="max-w-md mx-auto">
+    <div class="card p-6">
+      <h1 class="text-xl font-semibold">Email change</h1>
+      <div class="mt-3 alert alert-error" role="alert" aria-live="assertive">
+        {{ error_message }}
+      </div>
+      <p class="mt-3 text-sm text-gray-600 dark:text-gray-300">
+        If this link expired, request a new change link in your account.
+      </p>
     </div>
-  </div>
+  </section>
 {% endblock %}
