@@ -7,7 +7,7 @@ on:
     branches:
       - release-*
 
-  # Allows to run this workflow manually from the Actions tab
+  # Allows running this workflow manually from the Actions tab
   workflow_dispatch:
     inputs:
       environment:
@@ -30,7 +30,7 @@ jobs:
           else
             environment="${GITHUB_REF_NAME#release-}"
           fi
-          echo "environment=$environment" >> $GITHUB_OUTPUT
+          echo "environment=$environment" >> "$GITHUB_OUTPUT"
 
   publish:
     name: Publish
@@ -47,64 +47,46 @@ jobs:
       - name: Check Configuration
         id: decode-token
         run: |
+          set -euo pipefail
           if [ -n "${{ secrets.AUTH_TOKEN }}" ]; then
-            # Use the secret
             AUTH_TOKEN="${{ secrets.AUTH_TOKEN }}"
           else
-            # Fallback to the environment variable
             AUTH_TOKEN="${{ vars.AUTH_TOKEN }}"
           fi
-          
           if [ -z "$AUTH_TOKEN" ]; then
-            echo "AUTH_TOKEN is not set. Please ensure this variable is configured."
+            echo "AUTH_TOKEN is not set." >&2
             exit 1
           fi
-          
-          DECODED_STRING=$(echo "$AUTH_TOKEN" | base64 --decode)
+          DECODED_STRING="$(printf '%s' "$AUTH_TOKEN" | base64 --decode)"
           IFS='|' read -ra PARTS <<< "$DECODED_STRING"
-          
-          if [ -z "${PARTS[0]}" ] || \
-             [ -z "${PARTS[1]}" ]; then
-            echo "AUTH_TOKEN is malformed. Please ensure the value is properly configured."
+          if [ -z "${PARTS[0]:-}" ] || [ -z "${PARTS[1]:-}" ]; then
+            echo "AUTH_TOKEN is malformed." >&2
             exit 1
           fi
-          
-          echo "host=${PARTS[0]}" >> $GITHUB_OUTPUT
-          echo "api_key=${PARTS[1]}" >> $GITHUB_OUTPUT
+          echo "host=${PARTS[0]}" >> "$GITHUB_OUTPUT"
+          echo "api_key=${PARTS[1]}" >> "$GITHUB_OUTPUT"
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
-      - name: Process contents of templates folder
+      - name: Process templates folder
         id: process-data
         run: zip -r ../templates.zip .
         working-directory: ${{ github.workspace }}/templates
 
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
       - name: Validate templates
         id: validate
         run: |
-          HOST_URL="https://${{ steps.decode-token.outputs.host }}/api/templates/zip/validate"
-          AUTH_TOKEN="Auth-Token: ${{ steps.decode-token.outputs.api_key }}"
-          BASE64_ENCODED=$(base64 -w 0 templates.zip)
-          MD5SUM=$(md5sum templates.zip | awk '{print $1}')
-          
-          JSON_DATA='{
-            "file": {
-              "filename": "templates.zip",
-              "md5": "'"$MD5SUM"'",
-              "data": "'"$BASE64_ENCODED"'"
-            }
-          }'
-          
-          RESPONSE=$(curl -X POST -H "Content-Type: application/json" -H "$AUTH_TOKEN" -d "$JSON_DATA" "$HOST_URL")
-          echo $RESPONSE
-          
-          IGNORED=$(echo $RESPONSE | jq '.data.ignored | to_entries')
-          HAS_IGNORED=$(echo "$IGNORED" | jq 'length > 0')
-          IGNORED_MSG=$(echo "$IGNORED" | jq -r 'map("- **\(.key)**: \(.value)\n") | join("")')
-          
-          echo "has_ignored=${HAS_IGNORED}" >> $GITHUB_OUTPUT
-          echo "ignored_msg=${IGNORED_MSG}" >> $GITHUB_OUTPUT
+          echo "::add-mask::${{ steps.decode-token.outputs.api_key }}"
+          scripts/publish_templates.py validate \
+            --host "${{ steps.decode-token.outputs.host }}" \
+            --api-key "${{ steps.decode-token.outputs.api_key }}" \
+            --zip-path templates.zip
 
       - uses: trstringer/manual-approval@v1
         if: ${{ steps.validate.outputs.has_ignored == 'true' }}
@@ -113,29 +95,15 @@ jobs:
           approvers: ${{ github.actor }}
           minimum-approvals: 1
           issue-title: "Action Required for Specific Files"
-          issue-body: "Certain files have been identified that cannot be processed due to the reasons listed below. These files will be excluded from the deployment:\n
-          ${{ steps.validate.outputs.ignored_msg }}\n\n
-          By approving, you agree to proceed with the deployment by excluding these files. If you prefer to review or modify these files, cancel this deployment and adjust your files accordingly."
+          issue-body: |
+            Certain files cannot be processed and will be excluded from the deployment:
+            ${{ steps.validate.outputs.ignored_msg }}
+
+            Approve to proceed excluding these files. Cancel if you want to adjust files and rerun.
 
       - name: Push templates
         run: |
-          HOST_URL="https://${{ steps.decode-token.outputs.host }}/api/templates/zip"
-          AUTH_TOKEN="Auth-Token: ${{ steps.decode-token.outputs.api_key }}"
-          BASE64_ENCODED=$(base64 -w 0 templates.zip)
-          MD5SUM=$(md5sum templates.zip | awk '{print $1}')
-          
-          JSON_DATA='{
-            "file": {
-              "filename": "templates.zip",
-              "md5": "'"$MD5SUM"'",
-              "data": "'"$BASE64_ENCODED"'"
-            }
-          }'
-          
-          RESPONSE=$(curl -X POST -H "Content-Type: application/json" -H "$AUTH_TOKEN" -d "$JSON_DATA" "$HOST_URL")
-          STATUS=$(echo $RESPONSE | jq -r '.status')
-    
-          if [ "$STATUS" != "true" ]; then
-            echo "Deployment failed. Reason: $RESPONSE"
-            exit 1
-          fi
+          scripts/publish_templates.py push \
+            --host "${{ steps.decode-token.outputs.host }}" \
+            --api-key "${{ steps.decode-token.outputs.api_key }}" \
+            --zip-path templates.zip
